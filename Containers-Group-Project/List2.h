@@ -19,13 +19,15 @@ public:
 	class Iterator : public AbstractList2::Iterator {
 	protected:
 		Node* _this;
+		MemoryManager* _iter_memory;
 		friend class List2;
 	public:
-		Iterator() : _this(NULL) {}
+		Iterator() : _this(NULL), _iter_memory(NULL) {}
 		void* getElement(size_t& size) override;
 		bool hasNext() override;
 		void goToNext() override;
 		bool equals(AbstractList2::Iterator* right) override;
+		void operator delete(void* ptr);
 	};
 	List2(MemoryManager& mem) : AbstractList2(mem), _head(nullptr), _tail(nullptr), _size(0), _max_bytes(0){}
 	int size() override;

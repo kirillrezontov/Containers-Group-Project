@@ -27,6 +27,10 @@ bool List2::Iterator::equals(AbstractList2::Iterator* right)
 	return _this == _right->_this;
 }
 
+void List2::Iterator::operator delete(void* ptr) {
+	((List2::Iterator*)ptr)->_iter_memory;
+}
+
 List2::Iterator* List2::find(void* elem, size_t size)
 {
 	Node* _tmp = _head;
@@ -37,6 +41,7 @@ List2::Iterator* List2::find(void* elem, size_t size)
 			if (!_iter)
 				return nullptr;
 			_iter->_this = _tmp;
+			_iter->_iter_memory = &_memory;
 			return _iter;
 		}
 		_tmp = _tmp->next;
@@ -53,6 +58,7 @@ List2::Iterator* List2::newIterator()
 	if (!_iter)
 		return nullptr;	
 	_iter->_this = _head;
+	_iter->_iter_memory = &_memory;
 	return _iter;
 }
 
