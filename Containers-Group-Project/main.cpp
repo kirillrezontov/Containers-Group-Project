@@ -103,7 +103,6 @@ static void testList2(Mem& mem)
 
 	cout << "Test: insert 7 before 10 (using find)" << endl;
 	int seven = 7;
-	// find iterator must not be used to call methods (it's allocated by MemoryManager in find)
 	List2::Iterator* found = l.find(&b, sizeof(int)); // find 10
 	if (found) {
 		l.insert(found, &seven, sizeof(int)); // insert 7 before 10
