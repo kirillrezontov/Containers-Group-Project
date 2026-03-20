@@ -56,5 +56,8 @@
     <ClInclude Include="List.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="TableAbstract.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

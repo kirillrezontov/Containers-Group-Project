@@ -1,155 +1,114 @@
 #include "List.h"
 
 void* List::Iterator::getElement(size_t& size) {
-	if (!_this)
-		return NULL;
 	size = _this->size;
 	return _this->data;
 }
 
 bool List::Iterator::hasNext() {
-	return _this && _this->next;
+	if (_this && _this->next) return true;
 }
 
 void List::Iterator::goToNext() {
-	if (_this)
-		_this = _this->next;
+	_prev = _this;
+	if (_this && _this->next) _this = _this->next;
 }
 
-bool List::Iterator::equals(AbstractList::Iterator* right) {
-	List::Iterator* _right = (List::Iterator*)(right);
-	if (!_right)
-		return false;
-	return _this == _right->_this;
-}
-
-void List::Iterator::operator delete(void* ptr) {
-	if (ptr) {
-		((List::Iterator*)ptr)->_iter_memory->freeMem(ptr);
-	}
-}
-
-List::Iterator* List::find(void* elem, size_t size) {
-	Node* _tmp = _head;
-	Node* _prev = nullptr;
-	while (_tmp) {
-		if (_tmp->size == size && memcmp(_tmp->data, elem, size) == 0) {
-			void* mem = _memory.allocMem(sizeof(List::Iterator));
-			List::Iterator* _iter = new(mem) List::Iterator();
-			if (!_iter)
-				return nullptr;
-			_iter->_this = _tmp;
-			_iter->_prev = _prev;
-			_iter->_iter_memory = &_memory;
-			return _iter;
-		}
-		_prev = _tmp;
-		_tmp = _tmp->next;
-	}
-	return nullptr;
-}
-
-List::Iterator* List::newIterator() {
-	if (!_head)
-		return nullptr;
-	void* mem = _memory.allocMem(sizeof(List::Iterator));
-	List::Iterator* _iter = new(mem) List::Iterator();
-	if (!_iter)
-		return nullptr;	
-	_iter->_this = _head;
-	_iter->_iter_memory = &_memory;
-	return _iter;
-}
-
-void List::remove(AbstractList::Iterator* iter) {
-	List::Iterator* _iter = (List::Iterator*)(iter);
-	if (!_iter || !_iter->_this)
-		return;
-	Node* _tmp = _iter->_this;
-	Node* _prev = _iter->_prev;
-	_iter->_this = _tmp->next;	
-	if (_tmp == _head)
-		_head = _tmp->next;
-	else {
-		_prev->next = _tmp->next;
-	}
-	_memory.freeMem(_tmp->data);
-	_memory.freeMem(_tmp);
-	_size--;
+bool List::Iterator::equals(Container::Iterator* right) {
+	List::Iterator* _right = (List::Iterator*)right;
+	if (!(_right && _this && _right->_this)) return false;
+	if (_right->_this == _this) return true;
+	return false;
 }
 
 int List::size() { return _size; }
 
 size_t List::max_bytes() { return _max_bytes; }
 
-bool List::empty() { return _size == 0; }
+Container::Iterator* List::find(void* elem, size_t size) {
+	Node* curr = _head;
+	Node* prev = nullptr;
+	while (curr) {
+		if (curr->size == size && !memcmp(curr->data, elem, size))
+		{
+			List::Iterator* _new = new List::Iterator;
+			if (!_new) return nullptr;
+			_new->_prev = prev;
+			_new->_this = curr;
+			return _new;
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+	return nullptr;
+}
+Container::Iterator* List::newIterator() {
+	if (!_head) return nullptr;
+	List::Iterator* _new = new List::Iterator;
+	if (!_new) return nullptr;
+	_new->_prev = nullptr;
+	_new->_this = _head;
+	return _new;
+}
 
+void List::remove(Container::Iterator* iter) {
+	List::Iterator* _iter = (List::Iterator*)iter;
+	Node* next = _iter->_this->next;
+	if (_iter->_prev) _iter->_prev->next = next;
+	free(_iter->_this->data);
+	free(_iter->_this);
+	_iter->_this = next;
+}
 void List::clear() {
+	Node* next = nullptr;
 	while (_head) {
-		Node* _tmp = _head;
-		_head = _head->next;
-		_memory.freeMem(_tmp->data);
-		_memory.freeMem(_tmp);
+		free(_head->data);
+		next = _head->next;
+		free(_head);
+		_head = next;
 	}
 	_size = 0;
 }
+bool List::empty() {
+	return _size == 0;
+}
 
+List::~List() {
+	clear();
+}
 int List::push_front(void* elem, size_t elemSize) {
-	if (!elem || elemSize == 0)
-		return 1;
 	Node* _new = (Node*)_memory.allocMem(sizeof(Node));
-	if (!_new)
-		return 1;
 	_new->data = _memory.allocMem(elemSize);
-	if (!_new->data) {
-		_memory.freeMem(_new);
-		return 1;
-	}
+	if (!_new->data) return 1;
 	memcpy(_new->data, elem, elemSize);
 	_new->size = elemSize;
 	_new->next = _head;
 	_head = _new;
-	_size++;
 	return 0;
 }
-
 void List::pop_front() {
-	if (!_head)
-		return;
-	Node* _tmp = _head;
-	_head = _head->next;
-	_memory.freeMem(_tmp->data);
-	_memory.freeMem(_tmp);
-	_size--;
+	if (!_head) return;
+	Node* next = _head->next;
+	free(_head->data);
+	free(_head);
+	_head = next;
 }
-
 void* List::front(size_t& size) {
-	if (!_head)
-		return nullptr;
+	if (!_head) return nullptr;
 	size = _head->size;
 	return _head->data;
 }
-
-int List::insert(AbstractList::Iterator* iter, void* elem, size_t elemSize) {
-	List::Iterator* _iter = (List::Iterator*)(iter);
-	if (!_iter || !_iter->_this)
-		return 1;
+int List::insert(Container::Iterator* iter, void* elem, size_t elemSize) {
+	List::Iterator* _iter = (List::Iterator*)iter;
+	Node* curr = _iter->_this;
+	Node* prev = _iter->_prev;
 	Node* _new = (Node*)_memory.allocMem(sizeof(Node));
-	if (!_new)
-		return 1;
 	_new->data = _memory.allocMem(elemSize);
-	if (!_new->data) {
-		_memory.freeMem(_new);
-		return 1;
-	}
+	if (!_new->data) return 1;
 	memcpy(_new->data, elem, elemSize);
 	_new->size = elemSize;
-	_new->next = _iter->_this;
-	if (_iter->_prev)
-		_iter->_prev->next = _new;
-	else
-		_head = _new;
+	prev->next = _new;
+	_new->next = curr;
 	_iter->_prev = _new;
-	_size++;
 	return 0;
 }

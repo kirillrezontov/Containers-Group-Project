@@ -19,7 +19,7 @@ void List2::Iterator::goToNext()
 		_this = _this->next;
 }
 
-bool List2::Iterator::equals(AbstractList2::Iterator* right)
+bool List2::Iterator::equals(Container::Iterator* right)
 {
 	List2::Iterator* _right = (List2::Iterator*)(right);
 	if (!_right)
@@ -27,21 +27,15 @@ bool List2::Iterator::equals(AbstractList2::Iterator* right)
 	return _this == _right->_this;
 }
 
-void List2::Iterator::operator delete(void* ptr) {
-	((List2::Iterator*)ptr)->_iter_memory;
-}
-
-List2::Iterator* List2::find(void* elem, size_t size)
+Container::Iterator* List2::find(void* elem, size_t size)
 {
 	Node* _tmp = _head;
 	while (_tmp) {
 		if (_tmp->size == size && memcmp(_tmp->data, elem, size) == 0) {
-			void* mem = _memory.allocMem(sizeof(List2::Iterator));
-			List2::Iterator* _iter = new(mem) List2::Iterator();
+			List2::Iterator* _iter = new List2::Iterator;
 			if (!_iter)
 				return nullptr;
 			_iter->_this = _tmp;
-			_iter->_iter_memory = &_memory;
 			return _iter;
 		}
 		_tmp = _tmp->next;
@@ -49,20 +43,16 @@ List2::Iterator* List2::find(void* elem, size_t size)
 	return nullptr;
 }
 
-List2::Iterator* List2::newIterator()
+Container::Iterator* List2::newIterator()
 {
-	if (!_head)
-		return nullptr;
-	void* mem = _memory.allocMem(sizeof(List2::Iterator));
-	List2::Iterator* _iter = new(mem) List2::Iterator();
-	if (!_iter)
-		return nullptr;	
+	if (!_head) return nullptr;
+	List2::Iterator* _iter = new List2::Iterator;
+	if (!_iter) return nullptr;	
 	_iter->_this = _head;
-	_iter->_iter_memory = &_memory;
 	return _iter;
 }
 
-void List2::remove(AbstractList2::Iterator* iter)
+void List2::remove(Container::Iterator* iter)
 {
 	List2::Iterator* _iter = (List2::Iterator*)(iter);
 	if (!_iter || !_iter->_this)
@@ -230,7 +220,7 @@ void* List2::back(size_t& size)
 	return _tail->data;
 }
 
-int List2::insert(AbstractList2::Iterator* iter, void* elem, size_t elemSize)
+int List2::insert(Container::Iterator* iter, void* elem, size_t elemSize)
 {
 	List2::Iterator* _iter = (List2::Iterator*)(iter);
 	if (!_iter || !_iter->_this)
