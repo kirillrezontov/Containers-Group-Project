@@ -4,6 +4,7 @@
 class List : public AbstractList
 {
 protected:
+	friend class GroupContainer;
 	typedef struct Node
 	{
 		void* data;
