@@ -3,6 +3,8 @@
 #include "List2.h"
 #include "Set.h"
 #include "Mem.h"
+#include <chrono>
+
 template <class T> void test(T& c) {
 	int n = 1000000;
 	for (int i = 0; i < n; i++) {
@@ -40,23 +42,32 @@ template <class T> void test(T& c) {
 }
 
 int main(){
-	Mem mem(1024);
-	int a = 5;
-	int b = 10;
-	int c = 15;
-	int d = 5;
+	Kchau mem(64*1e7);
 	Set s(mem);
-	s.insert(&a, sizeof(int));
-	s.insert(&b, sizeof(int));
-	s.insert(&c, sizeof(int));
-	s.insert(&d, sizeof(int));
+
+	chrono::steady_clock::time_point start = chrono::steady_clock::now();
+	for (int i = 0; i < 1000000; i++) {
+		int r = s.insert(&i, sizeof(int));
+		if (r) {
+			std::cout << "Error: " << i << std::endl;
+			return 1;
+		}
+		//else { cout << i << '\r'; }
+	}
+	chrono::steady_clock::time_point end = chrono::steady_clock::now();
+	chrono::duration<double> elapsed_seconds = end - start;
+	cout << "Elapsed time: " << elapsed_seconds.count() << "s\n";
+
+
 	size_t size;
 	for (Container::Iterator* iter = s.newIterator();
-		int* elem = (int*)iter->getElement(size); 
-		iter->goToNext()) 
-	{
-		std::cout << *elem << std::endl;
+		int* elem = (int*)iter->getElement(size); iter->goToNext()) {
+		if (!elem || size != sizeof(int) || *elem < 0 || *elem >= 1000000) {
+			std::cout << "Error: " << (elem ? *elem : -1) << std::endl;
+			return 1;
+		}
 	}
+
 	s.clear();
 	return 0;
 }

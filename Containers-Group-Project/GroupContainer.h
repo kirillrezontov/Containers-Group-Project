@@ -3,7 +3,7 @@
 #include "List.h"
 // Базовый класс для некоторой группы абстрактных контейнеров
 
-class GroupContainer: public Container
+class GroupContainer : public Container
 {
 protected:
 	List** _tab;
@@ -24,7 +24,7 @@ protected:
 			else {
 				delete _iter;
 				_index++;
-				while(_index < _tab_size && (!_tab[_index] || _tab[_index]->empty())) _index++;
+				while (_index < _tab_size && (!_tab[_index] || _tab[_index]->empty())) _index++;
 				if (_index < _tab_size) _iter = (List::ListIterator*)_tab[_index]->newIterator();
 				else _iter = nullptr;
 			}
@@ -37,24 +37,26 @@ protected:
 		}
 		bool equals(Container::Iterator* right) override {
 			GroupContainer::Iterator* _right = (GroupContainer::Iterator*)right;
- 			return _iter->equals(_right->_iter);
+			return _iter->equals(_right->_iter);
 		}
 	};
 	virtual int _hash(void* elem, size_t size) = 0;
 public:
-	GroupContainer(MemoryManager& mem) : Container(mem), _tab_size(256) { 
-		_tab = (List**)_memory.allocMem(_tab_size*sizeof(List*));
+	GroupContainer(MemoryManager& mem) : Container(mem), _tab_size(1<<19) {
+		//_tab = (List**)_memory.allocMem(_tab_size * sizeof(List*));
+		_tab = (List**)malloc(_tab_size * sizeof(List*));
 		if (!_tab) throw exception();
 		for (int i = 0; i < _tab_size; i++) _tab[i] = nullptr;
 	}
 	~GroupContainer() {
 		for (int i = 0; i < _tab_size; i++) if (_tab[i]) delete _tab[i];
-		_memory.freeMem(_tab);
+		//_memory.freeMem(_tab);
+		free(_tab);
 	}
-	
+
 	int size() override { return _size; }
 	size_t max_bytes() override { return _memory.maxBytes(); }
-	GroupContainer::Iterator* newIterator() override{
+	GroupContainer::Iterator* newIterator() override {
 		for (int i = 0; i < _tab_size; i++) {
 			if (_tab[i] && !_tab[i]->empty()) {
 				GroupContainer::Iterator* _it = new GroupContainer::Iterator();
@@ -82,7 +84,7 @@ public:
 		return nullptr;
 	}
 	bool empty() override { return _size == 0; }
-	void remove(Container::Iterator* iter) override{
+	void remove(Container::Iterator* iter) override {
 		if (!iter) return;
 		GroupContainer::Iterator* Iter = (GroupContainer::Iterator*)iter;
 		int i = Iter->_index;
