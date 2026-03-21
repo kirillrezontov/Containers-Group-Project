@@ -132,6 +132,7 @@
     <ClCompile Include="List.cpp" />
     <ClCompile Include="List2.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Set.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Container.h" />
@@ -143,6 +144,7 @@
     <ClInclude Include="ListAbstract.h" />
     <ClInclude Include="Mem.h" />
     <ClInclude Include="MemoryManager.h" />
+    <ClInclude Include="Set.h" />
     <ClInclude Include="SetAbstract.h" />
     <ClInclude Include="TableAbstract.h" />
   </ItemGroup>

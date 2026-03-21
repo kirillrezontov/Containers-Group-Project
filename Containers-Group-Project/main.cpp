@@ -1,6 +1,7 @@
 #include <iostream>
 #include "List.h"
 #include "List2.h"
+#include "Set.h"
 #include "Mem.h"
 template <class T> void test(T& c) {
 	int n = 1000000;
@@ -40,11 +41,22 @@ template <class T> void test(T& c) {
 
 int main(){
 	Mem mem(1024);
-	List l(mem);
-	int a = 4;
-	l.push_front(&a, 4);
-	Container::Iterator* x = l.newIterator();
+	int a = 5;
+	int b = 10;
+	int c = 15;
+	int d = 5;
+	Set s(mem);
+	s.insert(&a, sizeof(int));
+	s.insert(&b, sizeof(int));
+	s.insert(&c, sizeof(int));
+	s.insert(&d, sizeof(int));
 	size_t size;
-	cout<< *(int*)x->getElement(size) << endl;
+	for (Container::Iterator* iter = s.newIterator();
+		int* elem = (int*)iter->getElement(size); 
+		iter->goToNext()) 
+	{
+		std::cout << *elem << std::endl;
+	}
+	s.clear();
 	return 0;
 }

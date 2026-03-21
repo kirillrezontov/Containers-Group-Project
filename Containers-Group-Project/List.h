@@ -1,41 +1,54 @@
 #pragma once
 #include "ListAbstract.h"
+#include <cstring>
 
-class List : public AbstractList
+
+class List :
+	public AbstractList
 {
-protected:
-	friend class GroupContainer;
-	typedef struct Node
+private:
+	struct List_node
 	{
-		void* data;
 		size_t size;
-		Node* next;
-	} Node;
-	int _size;
-	size_t _max_bytes;
-	Node* _head;
-	class Iterator : public Container::Iterator {
-	public:
-		Node* _this;
-		Node* _prev;
-		void* getElement(size_t& size) override;
-		bool hasNext() override;
-		void goToNext() override;
-		bool equals(Container::Iterator* right) override;
+		void* data;
+		List_node* next;
+	};
+	List_node* first_element;
+	int count;
+	friend class GroupContainer;
+	class ListIterator :
+		public Iterator
+	{
+		public:
+		List_node* current;
+		List_node* prev;
+		ListIterator(List_node* c, List_node* p);
+		~ListIterator() {}
+		void* getElement(size_t& size);
+		bool hasNext();
+		void goToNext();
+		bool equals(Iterator* right);
 	};
 public:
-	List(MemoryManager& mem) : AbstractList(mem), _head(nullptr), _size(0), _max_bytes(0) {}
-	int size() override;
-	size_t max_bytes() override;
-	Container::Iterator* find(void* elem, size_t size) override;
-	Container::Iterator* newIterator() override;
-	void remove(Container::Iterator* iter) override;
-	void clear() override;
-	bool empty() override;
-
+	List(MemoryManager& mem);
 	~List();
-	int push_front(void* elem, size_t elemSize) override;
-	void pop_front() override;
-	void* front(size_t& size) override;
-	int insert(Container::Iterator* iter, void* elem, size_t elemSize) override;
+	int size();
+	size_t max_bytes();
+	Iterator* find(void* elem, size_t size);
+	Iterator* newIterator();
+	void remove(Iterator* iter);
+	void clear();
+	bool empty();
+	int push_front(void* elem, size_t elemSize);
+	void pop_front();
+	void* front(size_t& size);
+	int insert(Iterator* iter, void* elem, size_t elemSize);
 };
+
+
+
+
+
+
+
+
