@@ -14,7 +14,7 @@ protected:
 		List** _tab;
 		int _index;
 		int _tab_size;
-		List::ListIterator* _iter;
+		List::Iterator* _iter;
 		void* getElement(size_t& size) override {
 			if (!_iter) return nullptr;
 			return _iter->getElement(size);
@@ -25,15 +25,15 @@ protected:
 				delete _iter;
 				_index++;
 				while (_index < _tab_size && (!_tab[_index] || _tab[_index]->empty())) _index++;
-				if (_index < _tab_size) _iter = (List::ListIterator*)_tab[_index]->newIterator();
+				if (_index < _tab_size) _iter = (List::Iterator*)_tab[_index]->newIterator();
 				else _iter = nullptr;
 			}
 		}
 		bool hasNext() override {
 			if (_iter->hasNext()) return true;
-			int i = _index + 1;
-			while (i < _tab_size) if (_tab[i] && !_tab[i]->empty()) return true;
-			else continue;
+			for (int i = _index + 1; i < _tab_size; i++)
+				if (_tab[i] && !_tab[i]->empty()) return true;
+			return false;
 		}
 		bool equals(Container::Iterator* right) override {
 			GroupContainer::Iterator* _right = (GroupContainer::Iterator*)right;
@@ -89,10 +89,11 @@ public:
 		GroupContainer::Iterator* Iter = (GroupContainer::Iterator*)iter;
 		int i = Iter->_index;
 		int old = _tab[i]->size();
-		Container::Iterator* lit = Iter->_iter;
+		List::ListIterator* lit = new List::ListIterator(*Iter->_iter);
 		Iter->goToNext();
 		_tab[i]->remove(lit);
-		if (_tab[Iter->_index]->size() < old) _size--;
+		delete lit;
+		if (_tab[i]->size() < old) _size--;
 	}
 	void clear() override {
 		for (int i = 0; i < _tab_size; i++) if (_tab[i]) _tab[i]->clear();

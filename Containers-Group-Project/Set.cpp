@@ -31,7 +31,10 @@ int Set::insert(void* elem, size_t size) {
 		_size++; return 0;
 	}
 	Container::Iterator* lit = _tab[i]->find(elem, size);
-	if (lit) return 1;
+	if (lit) {
+		delete lit;  
+		return 1;
+	}
 	if (_tab[i]->push_front(elem, size)) {
 		return 1;
 	}
