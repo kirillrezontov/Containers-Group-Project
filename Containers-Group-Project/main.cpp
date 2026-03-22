@@ -3,9 +3,7 @@
 #include "List2.h"
 #include "Set.h"
 #include "PoolManager.h"
-#include <chrono>
-#include <vector>
-#include <algorithm>
+#include <ctime>
 using namespace std;
 
 template <class T> void test(T& c) {
@@ -49,18 +47,14 @@ int main(){
 	MultiPoolManager mem(1, poolSize);
 	Set s(mem);
 
-	chrono::steady_clock::time_point start = chrono::steady_clock::now();
+	size_t start = clock();
 	for (int i = 0; i < 1000000; i++) {
 		int r = s.insert(&i, sizeof(int));
 		if (r) {
 			std::cout << "Error: " << i << std::endl;
 			return 1;
 		}
-		//else { cout << i << '\r'; }
 	}
-	chrono::steady_clock::time_point end = chrono::steady_clock::now();
-	chrono::duration<double> elapsed_seconds = end - start;
-	cout << "Elapsed time: " << elapsed_seconds.count() << "s\n";
 
 	size_t size;
 	for (Container::Iterator* iter = s.newIterator();
@@ -75,6 +69,9 @@ int main(){
 	for (int i = 0; i < 1000000; i+=2) {
 		s.remove(s.find(&i, sizeof(int)));
 	}
+	size_t end = clock();
+
+	cout << end - start << "ms\n";
 
 	for (Container::Iterator* iter = s.newIterator();
 		int* elem = (int*)iter->getElement(size);

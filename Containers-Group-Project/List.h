@@ -1,9 +1,12 @@
 #pragma once
 #include "ListAbstract.h"
 
+class GroupContainer;
+
 class List : public AbstractList
 {
 protected:
+	friend class GroupContainer;
 	typedef struct Node
 	{
 		void* data;

@@ -6,7 +6,7 @@ void* List::Iterator::getElement(size_t& size) {
 }
 
 bool List::Iterator::hasNext() {
-	if (_this && _this->next) return true;
+	return _this && _this->next;
 }
 
 void List::Iterator::goToNext() {
@@ -55,16 +55,18 @@ void List::remove(Container::Iterator* iter) {
 	List::Iterator* _iter = (List::Iterator*)iter;
 	Node* next = _iter->_this->next;
 	if (_iter->_prev) _iter->_prev->next = next;
-	free(_iter->_this->data);
-	free(_iter->_this);
+	else _head = next;
+	_memory.freeMem(_iter->_this->data);
+	_memory.freeMem(_iter->_this);
 	_iter->_this = next;
+	_size--;
 }
 void List::clear() {
 	Node* next = nullptr;
 	while (_head) {
-		free(_head->data);
+		_memory.freeMem(_head->data);
 		next = _head->next;
-		free(_head);
+		_memory.freeMem(_head);
 		_head = next;
 	}
 	_size = 0;
@@ -78,20 +80,23 @@ List::~List() {
 }
 int List::push_front(void* elem, size_t elemSize) {
 	Node* _new = (Node*)_memory.allocMem(sizeof(Node));
+	if (!_new) return 1;
 	_new->data = _memory.allocMem(elemSize);
-	if (!_new->data) return 1;
+	if (!_new->data) { _memory.freeMem(_new); return 1; }
 	memcpy(_new->data, elem, elemSize);
 	_new->size = elemSize;
 	_new->next = _head;
 	_head = _new;
+	_size++;
 	return 0;
 }
 void List::pop_front() {
 	if (!_head) return;
 	Node* next = _head->next;
-	free(_head->data);
-	free(_head);
+	_memory.freeMem(_head->data);
+	_memory.freeMem(_head);
 	_head = next;
+	_size--;
 }
 void* List::front(size_t& size) {
 	if (!_head) return nullptr;
@@ -103,12 +108,15 @@ int List::insert(Container::Iterator* iter, void* elem, size_t elemSize) {
 	Node* curr = _iter->_this;
 	Node* prev = _iter->_prev;
 	Node* _new = (Node*)_memory.allocMem(sizeof(Node));
+	if (!_new) return 1;
 	_new->data = _memory.allocMem(elemSize);
-	if (!_new->data) return 1;
+	if (!_new->data) { _memory.freeMem(_new); return 1; }
 	memcpy(_new->data, elem, elemSize);
 	_new->size = elemSize;
-	prev->next = _new;
+	if (prev) prev->next = _new;
+	else _head = _new;
 	_new->next = curr;
 	_iter->_prev = _new;
+	_size++;
 	return 0;
 }

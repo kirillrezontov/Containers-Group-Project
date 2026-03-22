@@ -10,7 +10,7 @@ int Set::_hash(void* elem, size_t size) {
 		hash &= 0xFFFF;
 	}
 	return hash;*/
-	const uint8_t* p = (const uint8_t*)elem;
+	/*const uint8_t* p = (const uint8_t*)elem;
 	uint32_t h = 2166136261u;  // FNV offset basis
 
 	while (size--) {
@@ -19,7 +19,8 @@ int Set::_hash(void* elem, size_t size) {
 		h ^= h >> 7;
 		h ^= h << 3;
 	}
-	return h & 0x7FFFF;
+	return h & 0x7FFFF;*/
+	return (*(int*)elem) % _tab_size;
 }
 
 int Set::insert(void* elem, size_t size) {
