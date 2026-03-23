@@ -120,3 +120,13 @@ int List::insert(Container::Iterator* iter, void* elem, size_t elemSize) {
 	_size++;
 	return 0;
 }
+
+bool List::contains(void* elem, size_t size) {
+	Node* curr = _head;
+	while (curr) {
+		if (curr->size == size && !memcmp(curr->data, elem, size))
+			return true;
+		curr = curr->next;
+	}
+	return false;  
+}

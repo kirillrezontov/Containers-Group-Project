@@ -6,12 +6,14 @@
 class GroupContainer : public Container
 {
 protected:
-	List** _tab;
+	List* _tab;
+	bool* _init;
 	int _size;
 	int _tab_size;
 	class Iterator : public Container::Iterator {
 	public:
-		List** _tab;
+		List* _tab;
+		bool* _init;
 		int _index;
 		int _tab_size;
 		List::Iterator* _iter;
@@ -25,15 +27,15 @@ protected:
 			else {
 				delete _iter;
 				_index++;
-				while (_index < _tab_size && (!_tab[_index] || _tab[_index]->empty())) _index++;
-				if (_index < _tab_size) _iter = (List::Iterator*)_tab[_index]->newIterator();
+				while (_index < _tab_size && (!_init[_index] || _tab[_index].empty())) _index++;
+				if (_index < _tab_size) _iter = (List::Iterator*)_tab[_index].newIterator();
 				else _iter = nullptr;
 			}
 		}
 		bool hasNext() override {
 			if (_iter->hasNext()) return true;
 			for (int i = _index + 1; i < _tab_size; i++)
-				if (_tab[i] && !_tab[i]->empty()) return true;
+				if (_init[_index] && !_tab[i].empty()) return true;
 			return false;
 		}
 		bool equals(Container::Iterator* right) override {
@@ -43,24 +45,28 @@ protected:
 	};
 	virtual int _hash(void* elem, size_t size) = 0;
 public:
-	GroupContainer(MemoryManager& mem) : Container(mem), _tab_size(1<<19) {
-		_tab = (List**)_memory.allocMem(_tab_size * sizeof(List*));
+	GroupContainer(MemoryManager& mem) : Container(mem), _tab_size(1<<18) {
+		_tab = (List*)_memory.allocMem(_tab_size * sizeof(List));
 		if (!_tab) throw exception();
-		for (int i = 0; i < _tab_size; i++) _tab[i] = nullptr;
+		_init = (bool*)_memory.allocMem(_tab_size * sizeof(bool));
+		if (!_init) { _memory.freeMem(_tab); throw exception(); }
+		for (int i = 0; i < _tab_size; i++) _init[i] = false;
 	}
 	~GroupContainer() {
-		for (int i = 0; i < _tab_size; i++) if (_tab[i]) delete _tab[i];
+		for (int i = 0; i < _tab_size; i++) if (_init[i]) _tab[i].~List();
 		_memory.freeMem(_tab);
+		_memory.freeMem(_init);
 	}
 
 	int size() override { return _size; }
 	size_t max_bytes() override { return _memory.maxBytes(); }
 	GroupContainer::Iterator* newIterator() override {
 		for (int i = 0; i < _tab_size; i++) {
-			if (_tab[i] && !_tab[i]->empty()) {
+			if (_init[i] && !_tab[i].empty()) {
 				GroupContainer::Iterator* _it = new GroupContainer::Iterator();
-				_it->_iter = (List::Iterator*)_tab[i]->newIterator();
+				_it->_iter = (List::Iterator*)_tab[i].newIterator();
 				_it->_tab = _tab;
+				_it->_init = _init;
 				_it->_index = i;
 				_it->_tab_size = _tab_size;
 				return _it;
@@ -70,12 +76,13 @@ public:
 	}
 	GroupContainer::Iterator* find(void* elem, size_t size) override {
 		int i = _hash(elem, size);
-		if (!_tab[i]) return nullptr;
-		List::Iterator* lit = (List::Iterator*)_tab[i]->find(elem, size);
+		if (!_init[i]) return nullptr;
+		List::Iterator* lit = (List::Iterator*)_tab[i].find(elem, size);
 		if (lit) {
 			GroupContainer::Iterator* _it = new GroupContainer::Iterator();
 			_it->_iter = lit;
 			_it->_tab = _tab;
+			_it->_init = _init;
 			_it->_index = i;
 			_it->_tab_size = _tab_size;
 			return _it;
@@ -87,17 +94,17 @@ public:
 		if (!iter) return;
 		GroupContainer::Iterator* Iter = (GroupContainer::Iterator*)iter;
 		int i = Iter->_index;
-		int old = _tab[i]->size();
+		int old = _tab[i].size();
 		List::Iterator* lit = new List::Iterator;
 		lit->_this = Iter->_iter->_this;
 		lit->_prev = Iter->_iter->_prev;
 		Iter->goToNext();
-		_tab[i]->remove(lit);
+		_tab[i].remove(lit);
 		delete lit;
-		if (_tab[i]->size() < old) _size--;
+		if (_tab[i].size() < old) _size--;
 	}
 	void clear() override {
-		for (int i = 0; i < _tab_size; i++) if (_tab[i]) _tab[i]->clear();
+		for (int i = 0; i < _tab_size; i++) if (_init[i]) _tab[i].~List();
 		_size = 0;
 	}
 };

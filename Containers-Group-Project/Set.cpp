@@ -20,23 +20,19 @@ int Set::_hash(void* elem, size_t size) {
 		h ^= h << 3;
 	}
 	return h & 0x7FFFF;*/
-	return (*(int*)elem) % _tab_size;
+	return (*(int*)elem) & 0x3FFFF;
 }
 
 int Set::insert(void* elem, size_t size) {
 	int i = _hash(elem, size);
-	if (!_tab[i]) {
-		_tab[i] = new List(_memory);
-		if (!_tab[i]) return 1;
-		if(_tab[i]->push_front(elem, size)) return 1;
+	if (!_init[i]) {
+		new(_tab+i) List(_memory);
+		_init[i] = true;
+		if(_tab[i].push_front(elem, size)) return 1;
 		_size++; return 0;
 	}
-	Container::Iterator* lit = _tab[i]->find(elem, size);
-	if (lit) {
-		delete lit;  
-		return 1;
-	}
-	if (_tab[i]->push_front(elem, size)) {
+	if (_tab[i].contains(elem, size)) return 1;
+	if (_tab[i].push_front(elem, size)) {
 		return 1;
 	}
 	_size++;

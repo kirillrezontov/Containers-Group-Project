@@ -39,4 +39,6 @@ public:
 	void pop_front() override;
 	void* front(size_t& size) override;
 	int insert(Container::Iterator* iter, void* elem, size_t elemSize) override;
+
+	bool contains(void* elem, size_t size);
 };
