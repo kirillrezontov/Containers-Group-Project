@@ -2,7 +2,7 @@
 #include "Container.h"
 #include "List.h"
 // Базовый класс для некоторой группы абстрактных контейнеров
-
+//
 class GroupContainer : public Container
 {
 protected:
