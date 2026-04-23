@@ -6,7 +6,6 @@ class GroupContainer;
 class List : public AbstractList
 {
 protected:
-	friend class GroupContainer;
 	typedef struct Node
 	{
 		void* data;
@@ -35,10 +34,14 @@ public:
 	bool empty() override;
 
 	~List();
-	int push_front(void* elem, size_t elemSize) override;
+	virtual int push_front(void* elem, size_t elemSize) override;
 	void pop_front() override;
 	void* front(size_t& size) override;
 	int insert(Container::Iterator* iter, void* elem, size_t elemSize) override;
+};
 
-	bool contains(void* elem, size_t size);
+class KeyList : public List {
+public:
+	int push_front(void* elem, size_t elemSize) override;
+	Container::Iterator* findByKey(void* key, size_t keySize);
 };

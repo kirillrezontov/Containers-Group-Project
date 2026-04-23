@@ -12,7 +12,7 @@ public:
 
 class PoolManager : public MemoryManager
 {
-	int   _poolSize;
+	size_t   _poolSize;
 	void* _poolStart;
 	void* _poolEnd;
 	void* _freeListHead;
@@ -60,7 +60,6 @@ class MultiPoolManager : public MemoryManager
 	int _poolSizes[5] = { 8, 16, 32, 64, 128 };
 	size_t _maxBytes;
 public:
-
 	MultiPoolManager(size_t size, size_t sizes[5]) : MemoryManager(size) {
 		_pools = (PoolManager*)malloc(_numPools * sizeof(PoolManager));
 		if (!_pools) throw badAlloc(size);

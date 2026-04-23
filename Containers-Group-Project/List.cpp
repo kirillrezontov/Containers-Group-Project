@@ -25,23 +25,7 @@ int List::size() { return _size; }
 
 size_t List::max_bytes() { return _memory.maxBytes(); }
 
-Container::Iterator* List::find(void* elem, size_t size) {
-	Node* curr = _head;
-	Node* prev = nullptr;
-	while (curr) {
-		if (curr->size == size && !memcmp(curr->data, elem, size))
-		{
-			List::Iterator* _new = new List::Iterator;
-			if (!_new) return nullptr;
-			_new->_prev = prev;
-			_new->_this = curr;
-			return _new;
-		}
-		prev = curr;
-		curr = curr->next;
-	}
-	return nullptr;
-}
+
 Container::Iterator* List::newIterator() {
 	if (!_head) return nullptr;
 	List::Iterator* _new = new List::Iterator;
@@ -49,6 +33,19 @@ Container::Iterator* List::newIterator() {
 	_new->_prev = nullptr;
 	_new->_this = _head;
 	return _new;
+}
+
+Container::Iterator* List::find(void* elem, size_t size) {
+	List::Iterator* f = (List::Iterator*)newIterator();
+	while (f){
+		size_t s = 0;
+		void* e = f->getElement(s);
+		if (s == size && memcmp(e, elem, size) == 0) return f;
+		if (f->hasNext()) f->goToNext();
+		else break;
+	}
+	delete f;
+	return nullptr;
 }
 
 void List::remove(Container::Iterator* iter) {
@@ -121,12 +118,28 @@ int List::insert(Container::Iterator* iter, void* elem, size_t elemSize) {
 	return 0;
 }
 
-bool List::contains(void* elem, size_t size) {
-	Node* curr = _head;
-	while (curr) {
-		if (curr->size == size && !memcmp(curr->data, elem, size))
-			return true;
-		curr = curr->next;
+Container::Iterator* KeyList::findByKey(void* key, size_t keySize) {
+	List::Iterator* f = (List::Iterator*)newIterator();
+	while (f) {
+		size_t s = 0, sk=0;
+		void* e = f->getElement(s);
+		sk = *(size_t*)e;
+		e = (char*)e + sizeof(size_t);
+		if (sk == keySize && memcmp(e, key, keySize) == 0) return f;
+		if (f->hasNext()) f->goToNext();
+		else break;
 	}
-	return false;  
+	delete f;
+	return nullptr;
+}
+
+int KeyList::push_front(void* elem, size_t elemSize) {
+	Node* _new = (Node*)_memory.allocMem(sizeof(Node));
+	if (!_new) return 1;
+	_new->data = elem;
+	_new->size = elemSize;
+	_new->next = _head;
+	_head = _new;
+	_size++;
+	return 0;
 }

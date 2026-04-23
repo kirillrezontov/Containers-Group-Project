@@ -39,6 +39,8 @@ public:
 
         // проверка на равенство итераторов
         virtual bool equals(Iterator *right) = 0;
+
+		virtual ~Iterator() {}
     };
 
     Container(MemoryManager &mem): _memory(mem) {}
