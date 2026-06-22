@@ -60,14 +60,14 @@ class MultiPoolManager : public MemoryManager
 	int _poolSizes[5] = { 8, 16, 32, 64, 128 };
 	size_t _maxBytes;
 public:
-	MultiPoolManager(size_t size, size_t sizes[5]) : MemoryManager(size) {
+	MultiPoolManager(size_t size) : MemoryManager(size) {
 		_pools = (PoolManager*)malloc(_numPools * sizeof(PoolManager));
 		if (!_pools) throw badAlloc(size);
 
 		int constructed = 0;
 		try {
 			for (; constructed < _numPools; constructed++) {
-				new (_pools + constructed) PoolManager(sizes[constructed], _poolSizes[constructed]);
+				new (_pools + constructed) PoolManager(size/5, _poolSizes[constructed]);
 			}
 		}
 		catch (...) {
