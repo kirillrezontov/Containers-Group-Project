@@ -5,12 +5,12 @@
 
 class Tester {
 protected:
-	ofstream _file;
+	ofstream& _file;
 	size_t _test_count;
-	int (**_tests)(int& time, int test_size);
 public:
 	class TesterSetupError {};
-	Tester(size_t test_count, const char* file) : _file(ofstream(file)),_test_count(test_count), _tests(NULL) {}
+	Tester(size_t test_count, ofstream& file) : _file(file),_test_count(test_count){}
+	virtual ~Tester() {}
 	virtual void* generateTest(size_t& input_size, size_t objnum, int*& objsizes);
 	virtual void runTests(int test_size) = 0;
 };
@@ -20,16 +20,18 @@ class SetTester : public Tester {
 	int* _res;
 	int* _time;
 public:
-	SetTester(size_t test_count, const char* file):Tester(test_count, file){
-		_res = (int*)malloc(sizeof(int) * _tnum);
-		if (!_tests) throw TesterSetupError();
-		_time = (int*)malloc(sizeof(int) * _tnum);
-		if (!_tests) throw TesterSetupError();
-		_tests = (int(**)(int&, int))malloc(sizeof(int(**)(int&, int)) * _tnum);
-		if (!_tests) throw TesterSetupError();
+	SetTester(ofstream& file):Tester(_tnum,file){
+		_res = (int*)calloc(_tnum, sizeof(int));
+		if (!_res) throw TesterSetupError();
+		_time = (int*)calloc(_tnum, sizeof(int));
+		if (!_time) throw TesterSetupError();
+	}
+	~SetTester() {
+		if(_res)free(_res);
+		if(_time) free(_time);
 	}
 	void* generateInts(size_t objnum);
-	void test(void* input, size_t input_size, size_t objnum, size_t* objsizes);
+	int test(int& time, void* input, size_t input_size, size_t objnum, size_t* objsizes);
 	void runTests(int test_size) override;
 	int test_create_destroy(int& time, int test_size);
 	int test_insert_find_remove(int& time, int test_size);
@@ -38,4 +40,5 @@ public:
 	int test_diff_types(int& time, int test_size);
 	int test_big_size(int& time, int test_size);
 	int test_big_size_half_find_del(int& time, int test_size);
+	void print_results();
 };

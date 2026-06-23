@@ -11,7 +11,7 @@ bool List::Iterator::hasNext() {
 
 void List::Iterator::goToNext() {
 	_prev = _this;
-	if (_this && _this->next) _this = _this->next;
+	if (_this) _this = _this->next;
 }
 
 bool List::Iterator::equals(Container::Iterator* right) {

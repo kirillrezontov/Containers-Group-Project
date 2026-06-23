@@ -3,11 +3,12 @@
 #include "Set.h"
 #include "PoolManager.h"
 #include <ctime>
+#include "Test.h"
 
 using namespace std;
 
 int main(){
-	MultiPoolManager mem(32*10e6);
+	/*MultiPoolManager mem(32*10e6);
 	Set s(mem);
 	//s.rehash(1 << 18);
 
@@ -61,5 +62,10 @@ int main(){
 	delete iter;
 	s.clear();
 
+	return 0;*/
+	ofstream file("test_results.txt");
+	file << "Set tests\n\n";
+	SetTester tester(file);
+	tester.runTests(1000);
 	return 0;
 }
