@@ -137,6 +137,7 @@ public:
 			if (_tab + index != ((GroupContainer::Iterator*)it)->_cur) {
 				newmem[index].push_front(el, sz);
 				remove(it);
+				_size++;
 			}
 			else it->goToNext();
 		}
