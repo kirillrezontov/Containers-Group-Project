@@ -6,7 +6,7 @@ int Set::insert(void* elem, size_t size) {
 	if (it) {
 		delete it; return 1;
 	}
-	if (_tab[i].size() > _list_size_limit) {
+	if (_size+1 >= _load_factor * _tab_size) {
 		rehash(); i = _hash(elem, size);
 	}
 	if (_tab[i].push_front(elem, size)) {

@@ -9,7 +9,7 @@ protected:
 	List* _tab;
 	int _size;
 	int _tab_size;
-	int _list_size_limit = 32;
+	double _load_factor;
 	class Iterator : public Container::Iterator {
 	public:
 		List* _cur;
@@ -47,7 +47,7 @@ protected:
 			return _iter->equals(_right->_iter);
 		}
 	};
-	virtual int _hash(void* elem, size_t size) {
+	int _hash(void* elem, size_t size) {
 		const uint8_t* p = (const uint8_t*)elem;
 		uint32_t h = 2166136261u; 
 		while (size--) {
@@ -60,7 +60,7 @@ protected:
 	}
 		
 public:
-	GroupContainer(MemoryManager& mem) : Container(mem), _tab_size(1<<4), _size(0) {
+	GroupContainer(MemoryManager& mem) : Container(mem), _tab_size(1<<4), _size(0), _load_factor(0.5) {
 		_tab = (List*)_memory.allocMem(_tab_size * sizeof(List));
 		if (!_tab) throw exception();
 		for (int i = 0; i < _tab_size; i++) new(_tab + i) List(_memory);

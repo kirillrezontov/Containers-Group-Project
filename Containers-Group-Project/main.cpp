@@ -7,9 +7,7 @@
 using namespace std;
 
 int main(){
-
-	size_t poolSize[5] = { 8*2e6, 16*2e6, 32*2e6, 64*2e6, 128*2e6 };
-	MultiPoolManager mem(1, poolSize);
+	MultiPoolManager mem(32*10e6);
 	Set s(mem);
 	//s.rehash(1 << 18);
 

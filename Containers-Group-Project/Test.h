@@ -1,18 +1,18 @@
 #pragma once
 #include "Set.h"
 #include "PoolManager.h"
-#include "fstream"
+#include <fstream>
 
 class Tester {
 protected:
 	ofstream _file;
 	size_t _test_count;
-	int (**_tests)(int& time);
+	int (**_tests)(int& time, int test_size);
 public:
 	class TesterSetupError {};
-	Tester(size_t test_count, const char* file) : _file(ofstream(file)),_test_count(test_count) {}
-	virtual void generateTests() = 0;
-	virtual void runTests() = 0;
+	Tester(size_t test_count, const char* file) : _file(ofstream(file)),_test_count(test_count), _tests(NULL) {}
+	virtual void* generateTest(size_t& input_size, size_t objnum, int*& objsizes);
+	virtual void runTests(int test_size) = 0;
 };
 
 class SetTester : public Tester {
@@ -25,18 +25,17 @@ public:
 		if (!_tests) throw TesterSetupError();
 		_time = (int*)malloc(sizeof(int) * _tnum);
 		if (!_tests) throw TesterSetupError();
-		_tests = (int(**)(int&))malloc(sizeof(int(**)(int&)) * _tnum);
+		_tests = (int(**)(int&, int))malloc(sizeof(int(**)(int&, int)) * _tnum);
 		if (!_tests) throw TesterSetupError();
 	}
-	void* generateTest(size_t objnum, int*& objsizes);
-	void test(void* input, size_t objnum, int* objsizes);
-	void generateTests() override;
-	void runTests() override;
-	void test_create_destroy();
-	void test_insert_delete();
-	void test_size();
-	void test_check_unique();
-	void test_diff_types();
-	void test_big_size();
-	void test_big_size_half_find_del();
+	void* generateInts(size_t objnum);
+	void test(void* input, size_t input_size, size_t objnum, size_t* objsizes);
+	void runTests(int test_size) override;
+	int test_create_destroy(int& time, int test_size);
+	int test_insert_find_remove(int& time, int test_size);
+	int test_size(int& time, int test_size);
+	int test_check_unique(int& time, int test_size);
+	int test_diff_types(int& time, int test_size);
+	int test_big_size(int& time, int test_size);
+	int test_big_size_half_find_del(int& time, int test_size);
 };
